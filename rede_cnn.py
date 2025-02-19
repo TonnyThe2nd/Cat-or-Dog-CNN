@@ -24,7 +24,15 @@ remover_imagens_invalidas(path_gato)
 
 diretorio_imagens = './Diretorio_imagens'
 
-train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.3)
+train_datagen = ImageDataGenerator(rescale=1./255,
+                                   validation_split=0.3,
+                                    rotation_range=20,
+                                    width_shift_range=0.2,
+                                    height_shift_range=0.2,
+                                    shear_range=0.2,
+                                    zoom_range=0.2,
+                                    horizontal_flip=True,
+                                    fill_mode='nearest')
 
 train_generator = train_datagen.flow_from_directory(
     directory = diretorio_imagens,
@@ -56,9 +64,9 @@ modelo = Sequential([
     BatchNormalization(),
     MaxPooling2D(),
     GlobalAveragePooling2D(),
-    Dense(64, activation='relu'),
+    Dense(512, activation='relu'),
     Dropout(0.5),
-    Dense(32, activation='relu'),
+    Dense(256, activation='relu'),
     Dropout(0.5),
     Dense(1, activation='sigmoid')
 ])
@@ -69,13 +77,13 @@ print("Modelo criado e compilado!")
 
 early_stop = EarlyStopping(monitor='val_loss',patience=5,restore_best_weights=True)
 modelo_check = ModelCheckpoint('melhor_modelo.keras', save_best_only=True)
-
-modelo.fit(train_generator, epochs=10,validation_data=validation_generator, verbose=1, callbacks=[early_stop,modelo_check])
+modelo.summary()
+modelo.fit(train_generator, epochs=20,validation_data=validation_generator, verbose=1, callbacks=[early_stop,modelo_check])
 
 print("Modelo treinado!")
 from tensorflow.keras.models import load_model
-#modelo.save("rede_neural_tensor.h5")
-modelo = load_model('rede_neural_tensor.h5')
+modelo.save("rede_neural_tensor_02.h5")
+#modelo = load_model('rede_neural_tensor.h5')
 previsao = modelo.predict(validation_generator)
 print(previsao)
 loss, accuracy = modelo.evaluate(validation_generator)
