@@ -81,14 +81,6 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr
 modelo.summary()
 history = modelo.fit(train_generator, epochs=30,validation_data=validation_generator, verbose=1, callbacks=[early_stop, reduce_lr,modelo_check])
 
-import matplotlib.pyplot as plt
-
-history_dic = history.history
-loss = history_dic['loss']
-val_loss = history_dic['val_loss']
-accuracy = history_dic['accuracy']
-val_accuracy = history_dic['val_accuracy']
-
 print("Modelo treinado!")
 from tensorflow.keras.models import load_model
 modelo.save("rede_neural_tensor_04.h5")
