@@ -1,5 +1,5 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 import os
 import cv2
 
@@ -77,45 +77,25 @@ print("Modelo criado e compilado!")
 
 early_stop = EarlyStopping(monitor='val_loss',patience=5,restore_best_weights=True)
 modelo_check = ModelCheckpoint('melhor_modelo.keras', save_best_only=True)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-6)
 modelo.summary()
-modelo.fit(train_generator, epochs=20,validation_data=validation_generator, verbose=1, callbacks=[early_stop,modelo_check])
+history = modelo.fit(train_generator, epochs=30,validation_data=validation_generator, verbose=1, callbacks=[early_stop, reduce_lr,modelo_check])
+
+import matplotlib.pyplot as plt
+
+history_dic = history.history
+loss = history_dic['loss']
+val_loss = history_dic['val_loss']
+accuracy = history_dic['accuracy']
+val_accuracy = history_dic['val_accuracy']
 
 print("Modelo treinado!")
 from tensorflow.keras.models import load_model
-modelo.save("rede_neural_tensor_02.h5")
+modelo.save("rede_neural_tensor_04.h5")
 #modelo = load_model('rede_neural_tensor.h5')
 previsao = modelo.predict(validation_generator)
 print(previsao)
 loss, accuracy = modelo.evaluate(validation_generator)
 print(f'Perda no Teste: {loss:.4f}')
 print(f'Acurácia no Teste: {accuracy:.4f}')
-
-########################
-
-from tensorflow.keras.models import load_model
-
-rede = load_model('rede_neural_tensor.h5')
-
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
-
-imagem = load_img('download (1).jpg',target_size=(128,128))
-
-import matplotlib.pyplot as plt
-
-plt.imshow(imagem)
-
-imagem_array = img_to_array(imagem)/255
-
-print(imagem_array)
-import numpy as np
-
-imagem_ajustada = np.expand_dims(imagem_array, axis=0)
-
-previsao = rede.predict(imagem_ajustada)
-print(previsao)
-if(previsao[0][0] > 0.5):
-    print("A Imagem processada é um cachorro!")
-else:
-    print("A Imagem processada é um gato!")
-
 
